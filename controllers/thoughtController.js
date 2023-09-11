@@ -1,12 +1,11 @@
-const { ObjectId } = require('mongoose').Types;
-const { Thought, reactionSchema } = require("../models");
+const { ObjectId } = require("mongoose").Types;
+const { Thought, Reaction, User } = require("../models");
 
 module.exports = {
   //get all thoughts
   async getThoughts(req, res) {
     try {
       const thoughts = await Thought.find();
-
       res.json(thoughts);
     } catch (err) {
       console.log(err);
@@ -17,7 +16,6 @@ module.exports = {
   async getSingleThought(req, res) {
     try {
       const thought = await Thought.find(req.params.thoughtId);
-
       res.json(thought);
     } catch (err) {
       console.log(err);
@@ -28,7 +26,6 @@ module.exports = {
   async createThought(req, res) {
     try {
       const thought = await Thought.create(req.body);
-
       res.json(thought);
     } catch (err) {
       console.log(err);
@@ -38,8 +35,11 @@ module.exports = {
   //update a thought
   async updateThought(req, res) {
     try {
-      const thought = await Thought.findOneAndUpdate(req.body);
-
+      const thought = await Thought.findOneAndUpdate(
+        req.params.thoughtId,
+        req.body,
+        { new: true }
+      );
       res.json(thought);
     } catch (err) {
       console.log(err);
@@ -49,31 +49,38 @@ module.exports = {
   //delete a thought
   async deleteThought(req, res) {
     try {
-      const thought = await Thought.findOneAndRemove({ _id: req.params.thoughtId });
-
+      const thought = await Thought.findOneAndRemove({
+        _id: req.params.thoughtId,
+      });
       res.json(thought);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
     }
   },
-  //add a friend
+  //add a reaction
   async createReaction(req, res) {
     try {
-      const friend = await reactionSchema.create(req.body);
-
-      res.json(friend);
+      const reaction = await Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $addToSet: { reactions: req.body } },
+        { new: true }
+      );
+      res.json(reaction);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
     }
   },
-  //delete a friend
+  //delete a reaction
   async deleteReaction(req, res) {
     try {
-      const thought = await reactionSchema.findOneAndRemove({ _id: req.params.friendId });
-
-      res.json(thought);
+      const reaction = await reactionSchema.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $pull: { reactionId: req.params.reactionId } },
+        { new: true }
+      );
+      res.json(reaction);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
