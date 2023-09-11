@@ -1,4 +1,4 @@
-const { ObjectId } = require('mongoose').Types;
+const { ObjectId } = require("mongoose").Types;
 const { User } = require("../models");
 
 module.exports = {
@@ -6,7 +6,6 @@ module.exports = {
   async getUsers(req, res) {
     try {
       const users = await User.find();
-
       res.json(users);
     } catch (err) {
       console.log(err);
@@ -17,7 +16,6 @@ module.exports = {
   async getSingleUser(req, res) {
     try {
       const user = await User.find(req.params.userId);
-
       res.json(user);
     } catch (err) {
       console.log(err);
@@ -28,7 +26,6 @@ module.exports = {
   async createUser(req, res) {
     try {
       const user = await User.create(req.body);
-
       res.json(user);
     } catch (err) {
       console.log(err);
@@ -38,8 +35,9 @@ module.exports = {
   //update a user
   async updateUser(req, res) {
     try {
-      const user = await User.findOneAndUpdate(req.body);
-
+      const user = await User.findOneAndUpdate(req.params.id, req.body, {
+        new: true,
+      });
       res.json(user);
     } catch (err) {
       console.log(err);
@@ -50,7 +48,6 @@ module.exports = {
   async deleteUser(req, res) {
     try {
       const user = await User.findOneAndRemove({ _id: req.params.userId });
-
       res.json(user);
     } catch (err) {
       console.log(err);
@@ -60,8 +57,11 @@ module.exports = {
   //add a friend
   async addFriend(req, res) {
     try {
-      const friend = await User.create(req.body);
-
+      const friend = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $addToSet: { friends: req.params.friendId } },
+        { new: true }
+      );
       res.json(friend);
     } catch (err) {
       console.log(err);
@@ -71,8 +71,11 @@ module.exports = {
   //delete a friend
   async deleteFriend(req, res) {
     try {
-      const user = await User.findOneAndRemove({ _id: req.params.friendId });
-
+      const user = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $pull: { friends: req.params.friendId } },
+        { new: true }
+      );
       res.json(user);
     } catch (err) {
       console.log(err);
@@ -80,3 +83,4 @@ module.exports = {
     }
   },
 };
+
