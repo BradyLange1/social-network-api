@@ -15,7 +15,7 @@ module.exports = {
   //get a single user
   async getSingleUser(req, res) {
     try {
-      const user = await User.find(req.params.userId);
+      const user = await User.find({ _id: req.params.userId });
       res.json(user);
     } catch (err) {
       console.log(err);
@@ -35,9 +35,11 @@ module.exports = {
   //update a user
   async updateUser(req, res) {
     try {
-      const user = await User.findOneAndUpdate(req.params.id, req.body, {
-        new: true,
-      });
+      const user = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $set: req.body },
+        { new: true }
+      );
       res.json(user);
     } catch (err) {
       console.log(err);
@@ -83,4 +85,3 @@ module.exports = {
     }
   },
 };
-

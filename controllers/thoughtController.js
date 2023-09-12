@@ -15,7 +15,7 @@ module.exports = {
   //get a single thought
   async getSingleThought(req, res) {
     try {
-      const thought = await Thought.find(req.params.thoughtId);
+      const thought = await Thought.find({ _id: req.params.thoughtId });
       res.json(thought);
     } catch (err) {
       console.log(err);
@@ -26,6 +26,11 @@ module.exports = {
   async createThought(req, res) {
     try {
       const thought = await Thought.create(req.body);
+      await User.findOneAndUpdate(
+        { _id: req.body.userId },
+        { $push: { thoughts: thought._id } },
+        { new: true }
+      );
       res.json(thought);
     } catch (err) {
       console.log(err);
@@ -36,8 +41,8 @@ module.exports = {
   async updateThought(req, res) {
     try {
       const thought = await Thought.findOneAndUpdate(
-        req.params.thoughtId,
-        req.body,
+        { _id: req.params.thoughtId },
+        { $set: req.body },
         { new: true }
       );
       res.json(thought);
@@ -75,7 +80,7 @@ module.exports = {
   //delete a reaction
   async deleteReaction(req, res) {
     try {
-      const reaction = await reactionSchema.findOneAndUpdate(
+      const reaction = await Thought.findOneAndUpdate(
         { _id: req.params.thoughtId },
         { $pull: { reactionId: req.params.reactionId } },
         { new: true }
