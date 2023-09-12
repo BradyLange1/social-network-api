@@ -57,6 +57,11 @@ module.exports = {
       const thought = await Thought.findOneAndRemove({
         _id: req.params.thoughtId,
       });
+      await User.findOneAndUpdate(
+        { thoughts: req.params.thoughtId },
+        { $pull: { thoughts: req.params.thoughtId } },
+        { new: true }
+      );
       res.json(thought);
     } catch (err) {
       console.log(err);
